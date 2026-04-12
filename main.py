@@ -10,7 +10,8 @@ from datetime import datetime, timedelta
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ADMIN_PASSWORD = "admin123"
-DB_PATH = os.path.join(BASE_DIR, "bookings.db")
+DB_DIR = os.environ.get("RAILWAY_VOLUME_MOUNT_PATH", BASE_DIR)
+DB_PATH = os.path.join(DB_DIR, "bookings.db")
 TIME_SLOTS = ["17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00", "00:00", "01:00", "02:00"]
 FIELDS = [1, 2]
 
