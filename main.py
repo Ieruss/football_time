@@ -8,8 +8,9 @@ import aiosqlite
 import os
 from datetime import datetime, timedelta
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ADMIN_PASSWORD = "admin123"
-DB_PATH = os.path.join(os.path.dirname(__file__), "bookings.db")
+DB_PATH = os.path.join(BASE_DIR, "bookings.db")
 TIME_SLOTS = ["17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00", "00:00", "01:00", "02:00"]
 FIELDS = [1, 2]
 
@@ -35,8 +36,13 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(SessionMiddleware, secret_key=os.environ.get("SECRET_KEY", "change-me-random-key"))
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
+templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
+
+
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
 
 
 async def get_bookings(date_str: str) -> dict:
