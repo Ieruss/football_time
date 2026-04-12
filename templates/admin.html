@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ | Football Time</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="header">
+        <h1>Football Time - Админ</h1>
+        <p>Управление бронированием</p>
+        <div class="nav-links">
+            <a href="/">Публичная страница</a>
+            <a href="/logout">Выйти</a>
+        </div>
+    </div>
+
+    <div class="date-nav">
+        <a href="?date={{ prev_date }}">&larr;</a>
+        <span class="current-date">{{ date }}</span>
+        <a href="?date={{ next_date }}">&rarr;</a>
+    </div>
+
+    <div class="container">
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-dot free"></div>
+                Свободно (нажми чтобы забронировать)
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot booked"></div>
+                Занято (нажми чтобы отменить)
+            </div>
+        </div>
+
+        <div class="fields-grid">
+            {% for field in fields %}
+            <div class="field-card">
+                <h2>Поле {{ field }}</h2>
+                <div class="slots">
+                    {% for slot in time_slots %}
+                        {% set key = field|string ~ '_' ~ slot %}
+                        {% set next_hour = '%02d:00' % ((slot[:2]|int + 1) % 24) %}
+                        {% if key in bookings %}
+                        <div class="slot slot-booked slot-admin" data-id="{{ bookings[key].id }}" data-name="{{ bookings[key].client_name }}">
+                            <span class="slot-time">{{ slot }} - {{ next_hour }}</span>
+                            <span class="slot-info">
+                                <span class="client-name">{{ bookings[key].client_name }}</span>
+                                <span class="client-phone">{{ bookings[key].client_phone }}</span>
+                            </span>
+                            <button class="cancel-btn" onclick="cancelBooking(event, {{ bookings[key].id }}, '{{ bookings[key].client_name }}')">Отмена</button>
+                        </div>
+                        {% else %}
+                        <div class="slot slot-free slot-admin" onclick="openBooking({{ field }}, '{{ slot }}')">
+                            <span class="slot-time">{{ slot }} - {{ next_hour }}</span>
+                            <span class="slot-status">Свободно</span>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Модальное окно бронирования -->
+    <div class="modal-overlay" id="bookingModal">
+        <div class="modal">
+            <h3>Забронировать</h3>
+            <p class="modal-sub" id="modalInfo"></p>
+
+            <label>Имя клиента</label>
+            <input type="text" id="clientName" placeholder="Введите имя">
+
+            <label>Номер телефона</label>
+            <input type="tel" id="clientPhone" placeholder="+7 XXX XXX XX XX">
+
+            <div class="modal-btns">
+                <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+                <button class="btn btn-primary" onclick="confirmBooking()">Забронировать</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentField = null;
+        let currentSlot = null;
+        const currentDate = "{{ date }}";
+
+        function openBooking(field, slot) {
+            currentField = field;
+            currentSlot = slot;
+            const nextHour = String((parseInt(slot) + 1) % 24).padStart(2, '0') + ':00';
+            document.getElementById('modalInfo').textContent = `Поле ${field} | ${slot} - ${nextHour} | ${currentDate}`;
+            document.getElementById('clientName').value = '';
+            document.getElementById('clientPhone').value = '';
+            document.getElementById('bookingModal').classList.add('active');
+            document.getElementById('clientName').focus();
+        }
+
+        function closeModal() {
+            document.getElementById('bookingModal').classList.remove('active');
+        }
+
+        async function confirmBooking() {
+            const name = document.getElementById('clientName').value.trim();
+            const phone = document.getElementById('clientPhone').value.trim();
+
+            if (!name || !phone) {
+                alert('Заполните все поля');
+                return;
+            }
+
+            const res = await fetch('/api/book', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    field: currentField,
+                    date: currentDate,
+                    time_slot: currentSlot,
+                    name: name,
+                    phone: phone
+                })
+            });
+
+            const data = await res.json();
+            if (data.ok) {
+                location.reload();
+            } else {
+                alert(data.error || 'Ошибка');
+            }
+        }
+
+        async function cancelBooking(event, id, name) {
+            event.stopPropagation();
+            if (!confirm(`Отменить бронь для "${name}"?`)) return;
+
+            const res = await fetch('/api/cancel', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id })
+            });
+
+            const data = await res.json();
+            if (data.ok) {
+                location.reload();
+            } else {
+                alert(data.error || 'Ошибка');
+            }
+        }
+
+        // Закрыть модалку по клику на оверлей
+        document.getElementById('bookingModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+    </script>
+</body>
+</html>

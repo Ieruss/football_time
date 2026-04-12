@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football Time - Бронирование полей</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="header">
+        <h1>Football Time</h1>
+        <p>Расписание футбольных полей | 17:00 - 03:00</p>
+        <div class="nav-links">
+            <a href="/admin">Админ-панель</a>
+        </div>
+    </div>
+
+    <div class="date-nav">
+        <a href="?date={{ prev_date }}">&larr;</a>
+        <span class="current-date">
+            {{ date }}
+            {% if date == today %}
+                <span class="today-badge">сегодня</span>
+            {% endif %}
+        </span>
+        <a href="?date={{ next_date }}">&rarr;</a>
+    </div>
+
+    <div class="container">
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-dot free"></div>
+                Свободно
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot booked"></div>
+                Занято
+            </div>
+        </div>
+
+        <div class="fields-grid">
+            {% for field in fields %}
+            <div class="field-card">
+                <h2>Поле {{ field }}</h2>
+                <div class="slots">
+                    {% for slot in time_slots %}
+                        {% set key = field|string ~ '_' ~ slot %}
+                        {% set next_hour = '%02d:00' % ((slot[:2]|int + 1) % 24) %}
+                        {% if key in bookings %}
+                        <div class="slot slot-booked">
+                            <span class="slot-time">{{ slot }} - {{ next_hour }}</span>
+                            <span class="slot-info">
+                                <span class="client-name">{{ bookings[key].client_name }}</span>
+                                <span class="client-phone">{{ bookings[key].client_phone }}</span>
+                            </span>
+                        </div>
+                        {% else %}
+                        <div class="slot slot-free">
+                            <span class="slot-time">{{ slot }} - {{ next_hour }}</span>
+                            <span class="slot-status">Свободно</span>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

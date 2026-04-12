@@ -1,0 +1,391 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #0f1923;
+    color: #e0e0e0;
+    min-height: 100vh;
+}
+
+.header {
+    background: linear-gradient(135deg, #1a472a, #2d8659);
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.header h1 {
+    font-size: 28px;
+    color: #fff;
+    margin-bottom: 4px;
+}
+
+.header p {
+    color: #b0d4c1;
+    font-size: 14px;
+}
+
+.nav-links {
+    margin-top: 12px;
+}
+
+.nav-links a {
+    color: #a0d8b8;
+    text-decoration: none;
+    margin: 0 12px;
+    font-size: 14px;
+    transition: color 0.2s;
+}
+
+.nav-links a:hover {
+    color: #fff;
+}
+
+.date-nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    background: #162029;
+}
+
+.date-nav a {
+    color: #4CAF50;
+    text-decoration: none;
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #1e2d3a;
+    transition: background 0.2s;
+}
+
+.date-nav a:hover {
+    background: #2a3f4f;
+}
+
+.date-nav .current-date {
+    font-size: 20px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.date-nav .today-badge {
+    background: #4CAF50;
+    color: #fff;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    margin-left: 8px;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.fields-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 650px) {
+    .fields-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.field-card {
+    background: #1a2733;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+.field-card h2 {
+    background: linear-gradient(135deg, #1e3a2a, #2a5e3e);
+    padding: 14px 20px;
+    font-size: 18px;
+    color: #fff;
+    text-align: center;
+}
+
+.slots {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.slot {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    border-radius: 10px;
+    transition: transform 0.15s;
+}
+
+.slot-time {
+    font-weight: 700;
+    font-size: 15px;
+    min-width: 110px;
+    color: #ccc;
+}
+
+.slot-free {
+    background: #162e1e;
+    border: 1px solid #2a5e3e;
+}
+
+.slot-free .slot-status {
+    color: #4CAF50;
+    font-weight: 600;
+}
+
+.slot-booked {
+    background: #2e1a1a;
+    border: 1px solid #5e2a2a;
+}
+
+.slot-booked .slot-info {
+    font-size: 13px;
+    color: #e88;
+}
+
+.slot-booked .slot-info .client-name {
+    font-weight: 600;
+    color: #ff8a80;
+}
+
+.slot-booked .slot-info .client-phone {
+    color: #bb9090;
+    margin-left: 8px;
+}
+
+/* Admin styles */
+.slot-admin {
+    cursor: pointer;
+}
+
+.slot-admin.slot-free:hover {
+    background: #1e4028;
+    transform: scale(1.01);
+}
+
+.slot-admin.slot-booked:hover {
+    background: #3e1e1e;
+}
+
+.cancel-btn {
+    margin-left: auto;
+    background: #5e2a2a;
+    border: none;
+    color: #ff8a80;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.2s;
+}
+
+.cancel-btn:hover {
+    background: #7e3a3a;
+}
+
+/* Modal */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal {
+    background: #1a2733;
+    border-radius: 16px;
+    padding: 30px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+
+.modal h3 {
+    color: #fff;
+    margin-bottom: 6px;
+    font-size: 20px;
+}
+
+.modal .modal-sub {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.modal label {
+    display: block;
+    color: #aaa;
+    font-size: 13px;
+    margin-bottom: 4px;
+    margin-top: 14px;
+}
+
+.modal input {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #2a3f4f;
+    background: #0f1923;
+    color: #fff;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.modal input:focus {
+    border-color: #4CAF50;
+}
+
+.modal-btns {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.btn:hover {
+    opacity: 0.85;
+}
+
+.btn-primary {
+    background: #4CAF50;
+    color: #fff;
+}
+
+.btn-secondary {
+    background: #2a3f4f;
+    color: #ccc;
+}
+
+/* Login page */
+.login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.login-card {
+    background: #1a2733;
+    border-radius: 16px;
+    padding: 40px;
+    width: 100%;
+    max-width: 360px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    text-align: center;
+}
+
+.login-card h2 {
+    color: #fff;
+    margin-bottom: 8px;
+}
+
+.login-card p {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+
+.login-card input {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 1px solid #2a3f4f;
+    background: #0f1923;
+    color: #fff;
+    font-size: 16px;
+    outline: none;
+    margin-bottom: 16px;
+}
+
+.login-card input:focus {
+    border-color: #4CAF50;
+}
+
+.login-card button {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    background: #4CAF50;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.login-card .error {
+    color: #ff6b6b;
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.legend {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    padding: 16px;
+    margin-bottom: 8px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #999;
+}
+
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.legend-dot.free {
+    background: #4CAF50;
+}
+
+.legend-dot.booked {
+    background: #e57373;
+}
