@@ -6,7 +6,9 @@ from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 import aiosqlite
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+
+TZ = timezone(timedelta(hours=5))  # Казахстан UTC+5
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ADMIN_PASSWORD = "admin123"
@@ -59,7 +61,7 @@ async def get_bookings(date_str: str) -> dict:
 
 
 def date_context(date_str: str) -> dict:
-    today = datetime.now().strftime("%Y-%m-%d")
+    today = datetime.now(TZ).strftime("%Y-%m-%d")
     d = datetime.strptime(date_str, "%Y-%m-%d")
     return {
         "date": date_str,
@@ -71,7 +73,7 @@ def date_context(date_str: str) -> dict:
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request, date: str = None):
-    date = date or datetime.now().strftime("%Y-%m-%d")
+    date = date or datetime.now(TZ).strftime("%Y-%m-%d")
     bookings = await get_bookings(date)
     ctx = date_context(date)
     return templates.TemplateResponse("index.html", {
@@ -84,7 +86,7 @@ async def index(request: Request, date: str = None):
 async def admin(request: Request, date: str = None):
     if not request.session.get("is_admin"):
         return RedirectResponse("/login", status_code=302)
-    date = date or datetime.now().strftime("%Y-%m-%d")
+    date = date or datetime.now(TZ).strftime("%Y-%m-%d")
     bookings = await get_bookings(date)
     ctx = date_context(date)
     return templates.TemplateResponse("admin.html", {
