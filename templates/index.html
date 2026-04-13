@@ -16,14 +16,16 @@
     </div>
 
     <div class="date-nav">
-        <a href="?date={{ prev_date }}">&larr;</a>
-        <span class="current-date">
-            {{ date }}
-            {% if date == today %}
-                <span class="today-badge">сегодня</span>
-            {% endif %}
-        </span>
-        <a href="?date={{ next_date }}">&rarr;</a>
+        <a href="?date={{ prev_week }}" class="week-arrow">&larr;</a>
+        <div class="week-strip">
+            {% for day in week_days %}
+            <a href="?date={{ day.date }}" class="week-day{% if day.is_selected %} selected{% endif %}{% if day.is_today %} today{% endif %}">
+                <span class="week-day-name">{{ day.day_name }}</span>
+                <span class="week-day-num">{{ day.day_num }}</span>
+            </a>
+            {% endfor %}
+        </div>
+        <a href="?date={{ next_week }}" class="week-arrow">&rarr;</a>
     </div>
 
     <div class="container">
@@ -51,7 +53,7 @@
                             <span class="slot-time">{{ slot }} - {{ next_hour }}</span>
                             <span class="slot-info">
                                 <span class="client-name">{{ bookings[key].client_name }}</span>
-                                <span class="client-phone">{{ bookings[key].client_phone }}</span>
+                                <span class="client-phone" onclick="openPhoneModal(event, '{{ bookings[key].client_phone }}')">{{ bookings[key].client_phone }}</span>
                             </span>
                         </div>
                         {% else %}
@@ -65,6 +67,48 @@
             </div>
             {% endfor %}
         </div>
+        </div>
+
+    <div class="phone-modal-overlay" id="phoneModal" onclick="closePhoneModal(event)">
+        <div class="phone-modal">
+            <div class="phone-modal-number" id="phoneModalNumber"></div>
+            <div class="phone-modal-actions">
+                <a id="phoneCall" href="#" class="phone-action phone-action-call">Позвонить</a>
+                <button class="phone-action phone-action-copy" onclick="copyPhone()">Скопировать</button>
+                <a id="phoneWhatsapp" href="#" target="_blank" class="phone-action phone-action-wa">WhatsApp</a>
+            </div>
+        </div>
     </div>
+
+    <script>
+        let currentPhone = '';
+
+        function cleanPhone(phone) {
+            return phone.replace(/[^\d+]/g, '').replace(/^8/, '+7');
+        }
+
+        function openPhoneModal(e, phone) {
+            e.stopPropagation();
+            currentPhone = phone;
+            const clean = cleanPhone(phone);
+            document.getElementById('phoneModalNumber').textContent = phone;
+            document.getElementById('phoneCall').href = 'tel:' + clean;
+            document.getElementById('phoneWhatsapp').href = 'https://wa.me/' + clean.replace('+', '');
+            document.getElementById('phoneModal').classList.add('active');
+        }
+
+        function closePhoneModal(e) {
+            if (e.target === document.getElementById('phoneModal')) {
+                document.getElementById('phoneModal').classList.remove('active');
+            }
+        }
+
+        function copyPhone() {
+            navigator.clipboard.writeText(cleanPhone(currentPhone));
+            const btn = document.querySelector('.phone-action-copy');
+            btn.textContent = 'Скопировано!';
+            setTimeout(() => btn.textContent = 'Скопировать', 1500);
+        }
+    </script>
 </body>
 </html>

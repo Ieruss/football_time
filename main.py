@@ -38,7 +38,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-app.add_middleware(SessionMiddleware, secret_key=os.environ.get("SECRET_KEY", "change-me-random-key"))
+app.add_middleware(SessionMiddleware, secret_key=os.environ.get("SECRET_KEY", "change-me-random-key"), max_age=365 * 24 * 60 * 60)
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
@@ -60,14 +60,34 @@ async def get_bookings(date_str: str) -> dict:
     return bookings
 
 
+DAY_NAMES = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
+
+
 def date_context(date_str: str) -> dict:
     today = datetime.now(TZ).strftime("%Y-%m-%d")
     d = datetime.strptime(date_str, "%Y-%m-%d")
+    # Начало недели (понедельник)
+    monday = d - timedelta(days=d.weekday())
+    week_days = []
+    for i in range(7):
+        day = monday + timedelta(days=i)
+        week_days.append({
+            "date": day.strftime("%Y-%m-%d"),
+            "day_num": day.day,
+            "day_name": DAY_NAMES[i],
+            "is_today": day.strftime("%Y-%m-%d") == today,
+            "is_selected": day.strftime("%Y-%m-%d") == date_str,
+        })
+    prev_week = (monday - timedelta(days=7)).strftime("%Y-%m-%d")
+    next_week = (monday + timedelta(days=7)).strftime("%Y-%m-%d")
     return {
         "date": date_str,
         "today": today,
         "prev_date": (d - timedelta(days=1)).strftime("%Y-%m-%d"),
         "next_date": (d + timedelta(days=1)).strftime("%Y-%m-%d"),
+        "week_days": week_days,
+        "prev_week": prev_week,
+        "next_week": next_week,
     }
 
 

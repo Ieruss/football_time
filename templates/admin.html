@@ -17,20 +17,29 @@
     </div>
 
     <div class="date-nav">
-        <a href="?date={{ prev_date }}">&larr;</a>
-        <span class="current-date">{{ date }}</span>
-        <a href="?date={{ next_date }}">&rarr;</a>
+        <a href="?date={{ prev_week }}" class="week-arrow">&larr;</a>
+        <div class="week-strip">
+            {% for day in week_days %}
+            <a href="?date={{ day.date }}" class="week-day{% if day.is_selected %} selected{% endif %}{% if day.is_today %} today{% endif %}">
+                <span class="week-day-name">{{ day.day_name }}</span>
+                <span class="week-day-num">{{ day.day_num }}</span>
+            </a>
+            {% endfor %}
+        </div>
+        <a href="?date={{ next_week }}" class="week-arrow">&rarr;</a>
     </div>
 
     <div class="container">
         <div class="legend">
             <div class="legend-item">
                 <div class="legend-dot free"></div>
-                Свободно (нажми чтобы забронировать)
+                <span class="legend-full">Свободно (нажми чтобы забронировать)</span>
+                <span class="legend-short">Свободно</span>
             </div>
             <div class="legend-item">
                 <div class="legend-dot booked"></div>
-                Занято (нажми чтобы отменить)
+                <span class="legend-full">Занято (нажми чтобы отменить)</span>
+                <span class="legend-short">Занято</span>
             </div>
         </div>
 
@@ -47,9 +56,9 @@
                             <span class="slot-time">{{ slot }} - {{ next_hour }}</span>
                             <span class="slot-info">
                                 <span class="client-name">{{ bookings[key].client_name }}</span>
-                                <span class="client-phone">{{ bookings[key].client_phone }}</span>
+                                <span class="client-phone" onclick="openPhoneModal(event, '{{ bookings[key].client_phone }}')">{{ bookings[key].client_phone }}</span>
                             </span>
-                            <button class="cancel-btn" onclick="cancelBooking(event, {{ bookings[key].id }}, '{{ bookings[key].client_name }}')">Отмена</button>
+                            <button class="cancel-btn" onclick="cancelBooking(event, {{ bookings[key].id }}, '{{ bookings[key].client_name }}')">&times;</button>
                         </div>
                         {% else %}
                         <div class="slot slot-free slot-admin" onclick="openBooking({{ field }}, '{{ slot }}')">
@@ -74,7 +83,7 @@
             <input type="text" id="clientName" placeholder="Введите имя">
 
             <label>Номер телефона</label>
-            <input type="tel" id="clientPhone" placeholder="+7 XXX XXX XX XX">
+            <input type="tel" id="clientPhone" placeholder="+7 (7XX) XXX-XX-XX" maxlength="18">
 
             <div class="modal-btns">
                 <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
@@ -107,8 +116,14 @@
             const name = document.getElementById('clientName').value.trim();
             const phone = document.getElementById('clientPhone').value.trim();
 
-            if (!name || !phone) {
-                alert('Заполните все поля');
+            if (!name || name.length < 1) {
+                alert('Введите имя клиента');
+                return;
+            }
+
+            const phoneDigits = phone.replace(/\D/g, '').slice(-10);
+            if (phoneDigits.length !== 10) {
+                alert('Номер телефона должен содержать 10 цифр');
                 return;
             }
 
@@ -154,6 +169,87 @@
         document.getElementById('bookingModal').addEventListener('click', function(e) {
             if (e.target === this) closeModal();
         });
+
+        // Маска ввода казахстанского номера: +7 (7XX) XXX-XX-XX
+        const phoneInput = document.getElementById('clientPhone');
+        phoneInput.addEventListener('input', function(e) {
+            let digits = this.value.replace(/\D/g, '');
+            // При вставке: если 11+ цифр — берём последние 10 (убираем код страны)
+            if (digits.length >= 11) {
+                digits = digits.slice(-10);
+            } else if (digits.length === 10 && digits.startsWith('7')) {
+                // Уже 10 цифр начинающихся с 7 — номер без кода страны
+            } else {
+                // Если начинает с 8, заменяем на 7
+                if (digits.startsWith('8')) digits = '7' + digits.slice(1);
+                // Убираем лидирующую 7 (код страны при ручном наборе "7707...")
+                if (digits.length > 10 && digits.startsWith('7')) digits = digits.slice(1);
+            }
+            // Максимум 10 цифр после +7
+            digits = digits.slice(0, 10);
+
+            let formatted = '+7';
+            if (digits.length > 0) formatted += ' (' + digits.slice(0, 3);
+            if (digits.length >= 3) formatted += ') ';
+            else if (digits.length > 0) formatted += '';
+            if (digits.length > 3) formatted += digits.slice(3, 6);
+            if (digits.length > 6) formatted += '-' + digits.slice(6, 8);
+            if (digits.length > 8) formatted += '-' + digits.slice(8, 10);
+
+            this.value = formatted;
+        });
+
+        phoneInput.addEventListener('focus', function() {
+            if (!this.value) this.value = '+7';
+        });
+
+        phoneInput.addEventListener('keydown', function(e) {
+            // Разрешаем Backspace до "+7"
+            if (e.key === 'Backspace' && this.value.length <= 2) {
+                e.preventDefault();
+            }
+        });
+
+        // Телефонная модалка
+        let currentPhone = '';
+
+        function cleanPhone(phone) {
+            return phone.replace(/[^\d+]/g, '').replace(/^8/, '+7');
+        }
+
+        function openPhoneModal(e, phone) {
+            e.stopPropagation();
+            currentPhone = phone;
+            const clean = cleanPhone(phone);
+            document.getElementById('phoneModalNumber').textContent = phone;
+            document.getElementById('phoneCall').href = 'tel:' + clean;
+            document.getElementById('phoneWhatsapp').href = 'https://wa.me/' + clean.replace('+', '');
+            document.getElementById('phoneModal').classList.add('active');
+        }
+
+        function closePhoneModal(e) {
+            if (e.target === document.getElementById('phoneModal')) {
+                document.getElementById('phoneModal').classList.remove('active');
+            }
+        }
+
+        function copyPhone() {
+            navigator.clipboard.writeText(cleanPhone(currentPhone));
+            const btn = document.querySelector('.phone-action-copy');
+            btn.textContent = 'Скопировано!';
+            setTimeout(() => btn.textContent = 'Скопировать', 1500);
+        }
     </script>
+
+    <div class="phone-modal-overlay" id="phoneModal" onclick="closePhoneModal(event)">
+        <div class="phone-modal">
+            <div class="phone-modal-number" id="phoneModalNumber"></div>
+            <div class="phone-modal-actions">
+                <a id="phoneCall" href="#" class="phone-action phone-action-call">Позвонить</a>
+                <button class="phone-action phone-action-copy" onclick="copyPhone()">Скопировать</button>
+                <a id="phoneWhatsapp" href="#" target="_blank" class="phone-action phone-action-wa">WhatsApp</a>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

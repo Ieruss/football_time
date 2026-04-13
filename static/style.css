@@ -49,42 +49,81 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 20px;
-    padding: 20px;
+    gap: 12px;
+    padding: 16px 12px;
     background: #162029;
 }
 
-.date-nav a {
+.week-arrow {
     color: #4CAF50;
     text-decoration: none;
-    font-size: 24px;
-    width: 40px;
-    height: 40px;
+    font-size: 22px;
+    width: 38px;
+    height: 38px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
     background: #1e2d3a;
     transition: background 0.2s;
+    flex-shrink: 0;
 }
 
-.date-nav a:hover {
+.week-arrow:hover {
     background: #2a3f4f;
 }
 
-.date-nav .current-date {
-    font-size: 20px;
+.week-strip {
+    display: flex;
+    gap: 6px;
+}
+
+.week-day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: #1e2d3a;
+    transition: background 0.2s, transform 0.15s;
+    min-width: 48px;
+}
+
+.week-day:hover {
+    background: #2a3f4f;
+    transform: scale(1.05);
+}
+
+.week-day-name {
+    font-size: 11px;
     font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+}
+
+.week-day-num {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ccc;
+    margin-top: 2px;
+}
+
+.week-day.selected {
+    background: #4CAF50;
+}
+
+.week-day.selected .week-day-name,
+.week-day.selected .week-day-num {
     color: #fff;
 }
 
-.date-nav .today-badge {
-    background: #4CAF50;
-    color: #fff;
-    padding: 2px 10px;
-    border-radius: 12px;
-    font-size: 12px;
-    margin-left: 8px;
+.week-day.today:not(.selected) {
+    border: 2px solid #4CAF50;
+}
+
+.week-day.today:not(.selected) .week-day-num {
+    color: #4CAF50;
 }
 
 .container {
@@ -99,9 +138,126 @@ body {
     gap: 20px;
 }
 
+/* ===== Mobile adaptation ===== */
 @media (max-width: 650px) {
+    .header {
+        padding: 14px 12px;
+    }
+    .header h1 {
+        font-size: 22px;
+    }
+    .header p {
+        font-size: 12px;
+    }
+
+    .date-nav {
+        gap: 6px;
+        padding: 10px 4px;
+    }
+    .week-arrow {
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+    }
+    .week-strip {
+        gap: 3px;
+        flex: 1;
+        justify-content: center;
+    }
+    .week-day {
+        padding: 6px 0;
+        min-width: 0;
+        flex: 1;
+        border-radius: 10px;
+    }
+    .week-day-name {
+        font-size: 10px;
+    }
+    .week-day-num {
+        font-size: 15px;
+    }
+
+    .container {
+        padding: 10px 8px;
+    }
+
     .fields-grid {
         grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .field-card {
+        border-radius: 12px;
+    }
+    .field-card h2 {
+        padding: 10px 14px;
+        font-size: 16px;
+    }
+
+    .slots {
+        padding: 8px;
+        gap: 6px;
+    }
+    .slot {
+        padding: 10px;
+        border-radius: 8px;
+    }
+    .slot-time {
+        font-size: 14px;
+        min-width: 85px;
+    }
+
+    .slot-booked {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .slot-booked .slot-info {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+    }
+    .slot-booked .slot-info .client-name {
+        font-size: 13px;
+    }
+    .slot-booked .slot-info .client-phone {
+        margin-left: 0 !important;
+        font-size: 12px;
+    }
+
+    .legend {
+        gap: 14px;
+        padding: 10px 8px;
+    }
+    .legend-item {
+        font-size: 12px;
+    }
+    .legend-full {
+        display: none !important;
+    }
+    .legend-short {
+        display: inline !important;
+    }
+
+    .modal {
+        padding: 20px;
+        border-radius: 16px 16px 0 0;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-width: 100%;
+    }
+    .modal input {
+        font-size: 16px;
+        padding: 12px 14px;
+    }
+    .btn {
+        padding: 14px;
+        font-size: 16px;
     }
 }
 
@@ -191,10 +347,16 @@ body {
     background: #5e2a2a;
     border: none;
     color: #ff8a80;
-    padding: 6px 12px;
-    border-radius: 8px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
     cursor: pointer;
-    font-size: 13px;
+    font-size: 18px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
     transition: background 0.2s;
 }
 
@@ -388,4 +550,94 @@ body {
 
 .legend-dot.booked {
     background: #e57373;
+}
+
+.legend-short {
+    display: none;
+}
+
+/* Clickable phone number */
+.slot-booked .client-phone {
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 3px;
+    transition: color 0.2s;
+}
+
+.slot-booked .client-phone:hover {
+    color: #ff8a80;
+}
+
+/* Phone action modal */
+.phone-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+}
+
+.phone-modal-overlay.active {
+    display: flex;
+}
+
+.phone-modal {
+    background: #1a2733;
+    border-radius: 16px;
+    padding: 20px 24px;
+    width: 280px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+    text-align: center;
+}
+
+.phone-modal-number {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 16px;
+    letter-spacing: 0.5px;
+}
+
+.phone-modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.phone-action {
+    display: block;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    transition: opacity 0.2s;
+}
+
+.phone-action:hover {
+    opacity: 0.85;
+}
+
+.phone-action-call {
+    background: #4CAF50;
+    color: #fff;
+}
+
+.phone-action-copy {
+    background: #2a3f4f;
+    color: #ccc;
+}
+
+.phone-action-wa {
+    background: #25D366;
+    color: #fff;
 }
